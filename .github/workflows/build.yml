@@ -10,14 +10,18 @@ jobs:
     permissions:
       contents: write
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             artifact_name: ALevels-PastPaper-Downloader-Linux
+            sep: ":"
           - os: windows-latest
-            artifact_name: ALevels-PastPaper-Downloader-Windows.exe
+            artifact_name: ALevels-PastPaper-Downloader-Windows
+            sep: ";"
           - os: macos-latest
             artifact_name: ALevels-PastPaper-Downloader-macOS
+            sep: ":"
 
     runs-on: ${{ matrix.os }}
 
@@ -39,7 +43,8 @@ jobs:
         run: |
           pyinstaller --noconsole --onefile \
             --name="${{ matrix.artifact_name }}" \
-            --add-data "icon.png:." \
+            --add-data "icon.png${{ matrix.sep }}." \
+            --collect-all customtkinter \
             --icon="icon.png" \
             alevel_downloader.py
 

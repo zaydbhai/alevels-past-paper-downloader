@@ -16,12 +16,15 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ALevels-PastPaper-Downloader-Linux
             sep: ":"
+            pyinstaller_args: '--icon=icon.png'
           - os: windows-latest
-            artifact_name: ALevels-PastPaper-Downloader-Windows
+            artifact_name: ALevels-PastPaper-Downloader-Windows.exe
             sep: ";"
+            pyinstaller_args: ''
           - os: macos-latest
             artifact_name: ALevels-PastPaper-Downloader-macOS
             sep: ":"
+            pyinstaller_args: ''
 
     runs-on: ${{ matrix.os }}
 
@@ -40,12 +43,13 @@ jobs:
           pip install customtkinter cloudscraper beautifulsoup4 pyinstaller
 
       - name: Build Executable
+        shell: bash
         run: |
           pyinstaller --noconsole --onefile \
             --name="${{ matrix.artifact_name }}" \
             --add-data "icon.png${{ matrix.sep }}." \
             --collect-all customtkinter \
-            --icon="icon.png" \
+            ${{ matrix.pyinstaller_args }} \
             alevel_downloader.py
 
       - name: Upload Artifacts to GitHub Release

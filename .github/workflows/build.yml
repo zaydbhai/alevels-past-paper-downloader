@@ -3,13 +3,13 @@ name: Build Executables
 on:
   push:
     tags:
-      - 'v*'                # run when you push a tag like v1.1.0
-  workflow_dispatch:        # also allow manual trigger from GitHub UI
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
     permissions:
-      contents: write       # needed to upload to Release
+      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -17,13 +17,15 @@ jobs:
           - os: ubuntu-latest
             artifact_name: ALevels-Downloader-Linux
             sep: ":"
+            pyinstaller_args: '--icon=icon.png'
           - os: windows-latest
             artifact_name: ALevels-Downloader-Windows.exe
             sep: ";"
+            pyinstaller_args: ''
           - os: macos-latest
             artifact_name: ALevels-Downloader-macOS
             sep: ":"
-
+            pyinstaller_args: ''
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -48,6 +50,7 @@ jobs:
             --name="${{ matrix.artifact_name }}" \
             --add-data "icon.png${{ matrix.sep }}." \
             --collect-all customtkinter \
+            ${{ matrix.pyinstaller_args }} \
             alevel_downloader.py
 
           # Build O-Level version (append "-OLevel" to the name)
@@ -55,7 +58,8 @@ jobs:
             --name="${{ matrix.artifact_name }}-OLevel" \
             --add-data "icon.png${{ matrix.sep }}." \
             --collect-all customtkinter \
-            olevel_downloader.py
+            ${{ matrix.pyinstaller_args }} \
+            olevels_downloader.py
 
       - name: Upload Artifacts to GitHub Release
         uses: softprops/action-gh-release@v2

@@ -3,28 +3,26 @@ name: Build Executables
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*'                # run when you push a tag like v1.1.0
+  workflow_dispatch:        # also allow manual trigger from GitHub UI
 
 jobs:
   build:
     permissions:
-      contents: write
+      contents: write       # needed to upload to Release
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: ALevels-PastPaper-Downloader-Linux
+            artifact_name: ALevels-Downloader-Linux
             sep: ":"
-            pyinstaller_args: '--icon=icon.png'
           - os: windows-latest
-            artifact_name: ALevels-PastPaper-Downloader-Windows.exe
+            artifact_name: ALevels-Downloader-Windows.exe
             sep: ";"
-            pyinstaller_args: ''
           - os: macos-latest
-            artifact_name: ALevels-PastPaper-Downloader-macOS
+            artifact_name: ALevels-Downloader-macOS
             sep: ":"
-            pyinstaller_args: ''
 
     runs-on: ${{ matrix.os }}
 
@@ -42,15 +40,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install customtkinter cloudscraper beautifulsoup4 pyinstaller
 
-      - name: Build Executable
+      - name: Build Executables
         shell: bash
         run: |
+          # Build A-Level version
           pyinstaller --noconsole --onefile \
             --name="${{ matrix.artifact_name }}" \
             --add-data "icon.png${{ matrix.sep }}." \
             --collect-all customtkinter \
-            ${{ matrix.pyinstaller_args }} \
             alevel_downloader.py
+
+          # Build O-Level version (append "-OLevel" to the name)
+          pyinstaller --noconsole --onefile \
+            --name="${{ matrix.artifact_name }}-OLevel" \
+            --add-data "icon.png${{ matrix.sep }}." \
+            --collect-all customtkinter \
+            olevel_downloader.py
 
       - name: Upload Artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
